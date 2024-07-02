@@ -1,0 +1,26 @@
+# Trigger the workflow on push or pull request
+on: [push, pull_request]
+name: Test building Zola
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+    with:
+      build-dir: test-site
+      build: true
+      push: true
+  # build-2:
+  #   name: Build with BUILD_FLAGS
+  #   uses: ./.github/workflows/build.yml
+  #   with:
+  #     build-dir: test-site
+  # build-3:
+  #   name: Build with CHECK_LINKS
+  #   uses: ./.github/workflows/build.yml
+  #   with:
+  #     build-dir: test-site
+  # build-4:
+  #   name: Build with CHECK_LINKS and CHECK_FLAGS
+  #   uses: ./.github/workflows/build.yml
+  #   with:
+  #     build-dir: test-site

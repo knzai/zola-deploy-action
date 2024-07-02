@@ -1,9 +1,10 @@
-name: 'Zola Deploy to Pages'
-description: 'Build and deploy a Zola site to GitHub Pages'
+#Still depends on triggering default gh deploy actions 
+name: 'Zola Build & Push to Pages'
+description: 'Build and push a Zola site to GitHub Pages '
 author: 'Shaleen Jain'
-runs:
-  using: 'docker'
-  image: 'Dockerfile'
 branding:
   icon: 'zap'  
   color: 'green'
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml

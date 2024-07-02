@@ -101,6 +101,10 @@ which is where GitHub expects it to be.
 
 [zola]: https://github.com/getzola/zola
 
+## Development
+* Install https://github.com/nektos/act to test locally
+* ```git submodule add git@github.com:janbaudisch/zola-sam.git themes/zola-sam``` to test submodule inclusion of themes
+
 ##
 
 Thanks and enjoy your day!

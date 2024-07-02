@@ -1,0 +1,3 @@
+[submodule "test-site/themes/zola-sam"]
+	path = test-site/themes/zola-sam
+	url = git@github.com:janbaudisch/zola-sam.git

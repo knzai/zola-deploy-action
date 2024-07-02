@@ -1,49 +1,81 @@
-# Trigger the workflow on push or pull request
-on: [push, pull_request]
+name: Build Zola on content
+on:
+  workflow_call:
+    inputs:
+      target-repository:
+        description: 'Repository to push the html to'
+        required: false
+        default: ${{ github.repository }}
+        type: string
+      target-branch:
+        description: 'Branch to push to'
+        required: false
+        default: 'gh-pages'
+        type: string
+      build-dir:
+        description: 'Directory to run zola build in - root of the content site'
+        required: false
+        default: '.'
+        type: string
+      output:
+        description: 'Additional debugging output'
+        required: false
+        default: false
+        type: boolean
+      build:
+        description: 'Run the build'
+        required: false
+        default: true
+        type: boolean
+      push:
+        description: 'Push the output'
+        required: false
+        default: true
+        type: boolean
 
-name: Build
 jobs:
-  build-1:
-    name: Build with minimal options
+  variables:
+    if: inputs.output == true
+    name: Ouput variables and do any complicated checks
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Build with the latest action rev
-      uses: shalzz/zola-deploy-action@master
-      env:
-        BUILD_ONLY: true
-        BUILD_DIR: test-site
-  build-2:
-    name: Build with BUILD_FLAGS
+      - name: Output variables
+        run: |
+          echo "GITHUB_REPOSITORY : $GITHUB_REPOSITORY"
+          echo "target-repository : ${{ inputs.target-repository }}"
+          echo "target-branch     : ${{ inputs.target-branch }}"
+          echo "build-dir         : ${{ inputs.build-dir }}"
+
+  build:
+    needs: variables  
+    if:  inputs.build == true && !failure() && !cancelled()
+    name: Checkout and build site
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: Build with the latest action rev
-      uses: shalzz/zola-deploy-action@master
-      env:
-        BUILD_ONLY: true
-        BUILD_DIR: test-site
-        BUILD_FLAGS: --drafts --base-url example.com
-  build-3:
-    name: Build with CHECK_LINKS
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Build with the latest action rev
-      uses: shalzz/zola-deploy-action@master
-      env:
-        BUILD_ONLY: true
-        BUILD_DIR: test-site
-        CHECK_LINKS: true
-  build-4:
-    name: Build with CHECK_LINKS and CHECK_FLAGS
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Build with the latest action rev
-      uses: shalzz/zola-deploy-action@master
-      env:
-        BUILD_ONLY: true
-        BUILD_DIR: test-site
-        CHECK_LINKS: true
-        CHECK_FLAGS: --drafts
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          path: content
+          submodules: recursive
+      - name: Install zola
+        uses: taiki-e/install-action@zola
+      - name: Run zola build ${{ inputs.build-dir }}
+        run: zola --root content/${{ inputs.build-dir }} build --output-dir output
+      - name: Checkout target repo
+        if: inputs.build == true && inputs.push == true
+        uses: actions/checkout@v4
+        with:
+          path: tmp
+          repository: ${{ inputs.target-repository }}
+          ref: ${{ inputs.target-branch }}
+          sparse-checkout: ''
+      - name: Push files
+        if: inputs.build == true && inputs.push == true
+        run: |
+          mv tmp/.git output/.git
+          cd output
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Deploy ${{ inputs.target-repository }} to ${{ inputs.target-repository }}:${{ inputs.target-branch }}"
+          git push
