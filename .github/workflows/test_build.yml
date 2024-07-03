@@ -5,7 +5,7 @@ jobs:
   # Even though this works to continue, job level failure always shows as broken build
   # Commenting out for some brave soul who wants to figure out a way around that
   # fail_bad_strat:
-  #   uses: ./.github/workflows/build.yml
+  #   uses: knzconnor/zola-deploy-action@HEAD
   #   with:
   #     strategy: nope
   # verify_failure:
@@ -20,32 +20,42 @@ jobs:
   #       if: failure()
   #       run: echo 0
   dryrun:
-    uses: ./.github/workflows/build.yml
-    with:
-      strategy: dryrun
+    runs-on: ubuntu-latest
+    steps:
+    - uses: knzconnor/zola-deploy-action@master
+      with:
+        strategy: dryrun
   check:
     name: Check
-    uses: ./.github/workflows/build.yml
-    with:
-      build-dir: test-site
-      strategy: check
-      check-flags: --drafts
+    runs-on: ubuntu-latest
+    steps:
+    - uses: knzconnor/zola-deploy-action@master
+      with:
+        build-dir: test-site
+        strategy: check
+        check-flags: --drafts
   build:
-    uses: ./.github/workflows/build.yml
-    with:
-      build-dir: test-site
-      build-flags: --drafts --base-url example.com
-      strategy: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: knzconnor/zola-deploy-action@master
+      with:
+        build-dir: test-site
+        build-flags: --drafts --base-url example.com
+        strategy: build
   build_skip:
-    uses: ./.github/workflows/build.yml
-    with:
-      build-dir: test-site
-      strategy: build
-      skip-check: true
+    runs-on: ubuntu-latest
+    steps:
+    - uses: knzconnor/zola-deploy-action@master
+      with:
+        build-dir: test-site
+        strategy: build
+        skip-check: true
   push:
-    uses: ./.github/workflows/build.yml
-    with:
-      build-dir: test-site
-      strategy: push
-      #target-repository: ${{ github.repository }}
-      #target-branch: gh-pages
+    runs-on: ubuntu-latest
+    steps:
+    - uses: knzconnor/zola-deploy-action@master
+      with:
+        build-dir: test-site
+        strategy: push
+        #target-repository: ${{ github.repository }}
+        #target-branch: gh-pages
