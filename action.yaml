@@ -9,15 +9,13 @@ inputs:
   strategy:
     description: 'How far to take the deploy: dryrun, check, build, push'
     required: false
-    default: "push"
-    type: string
-    # maybe they'll support this for workflow_call some day
-    # type: choice
-    # options:
-    #   - dryrun
-    #   - check
-    #   - build
-    #   - push
+    default: 'push'
+    type: choice
+    options:
+      - dryrun
+      - check
+      - build
+      - push
   target-repository:
     description: Repository to push the html to
     required: false
@@ -62,12 +60,6 @@ runs:
         echo "build-flags       : ${{ inputs.build-flags }}"
         echo "skip-check        : ${{ inputs.skip-check }}"
         echo "check-flags       : ${{ inputs.check-flags }}"
-    - name: Fail if invalid strategy
-      if: always() && ! contains(fromJSON('["dryrun", "check", "build", "push"]'), inputs.strategy)
-      shell: bash
-      run: |
-        echo '${{ inputs.strategy }} not in: "dryrun", "check", "build", "push"'
-        exit 1
     - name: Checkout source repo
       if: inputs.strategy != 'dryrun'
       uses: actions/checkout@v4

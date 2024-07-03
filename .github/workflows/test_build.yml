@@ -2,23 +2,6 @@
 on: [push, pull_request]
 name: Test building Zola
 jobs:
-  # Even though this works to continue, job level failure always shows as broken build
-  # Commenting out for some brave soul who wants to figure out a way around that
-  # fail_bad_strat:
-  #   uses: knzconnor/zola-deploy-action@HEAD
-  #   with:
-  #     strategy: nope
-  # verify_failure:
-  #   needs: fail_bad_strat
-  #   if: always()
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Param checking failed to detect problem
-  #       if: success()
-  #       run: echo 1
-  #     - name: Failed properly
-  #       if: failure()
-  #       run: echo 0
   dryrun:
     runs-on: ubuntu-latest
     steps:
