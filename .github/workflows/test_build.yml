@@ -2,25 +2,50 @@
 on: [push, pull_request]
 name: Test building Zola
 jobs:
-  build:
-    name: Build
+  # Even though this works to continue, job level failure always shows as broken build
+  # Commenting out for some brave soul who wants to figure out a way around that
+  # fail_bad_strat:
+  #   uses: ./.github/workflows/build.yml
+  #   with:
+  #     strategy: nope
+  # verify_failure:
+  #   needs: fail_bad_strat
+  #   if: always()
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Param checking failed to detect problem
+  #       if: success()
+  #       run: echo 1
+  #     - name: Failed properly
+  #       if: failure()
+  #       run: echo 0
+  dryrun:
+    uses: ./.github/workflows/build.yml
+    with:
+      strategy: dryrun
+  check:
+    name: Check
     uses: ./.github/workflows/build.yml
     with:
       build-dir: test-site
-      build: true
-      push: true
-  # build-2:
-  #   name: Build with BUILD_FLAGS
-  #   uses: ./.github/workflows/build.yml
-  #   with:
-  #     build-dir: test-site
-  # build-3:
-  #   name: Build with CHECK_LINKS
-  #   uses: ./.github/workflows/build.yml
-  #   with:
-  #     build-dir: test-site
-  # build-4:
-  #   name: Build with CHECK_LINKS and CHECK_FLAGS
-  #   uses: ./.github/workflows/build.yml
-  #   with:
-  #     build-dir: test-site
+      strategy: check
+      check-flags: --drafts
+  build:
+    uses: ./.github/workflows/build.yml
+    with:
+      build-dir: test-site
+      build-flags: --drafts --base-url example.com
+      strategy: build
+  build_skip:
+    uses: ./.github/workflows/build.yml
+    with:
+      build-dir: test-site
+      strategy: build
+      skip-check: true
+  push:
+    uses: ./.github/workflows/build.yml
+    with:
+      build-dir: test-site
+      strategy: push
+      #target-repository: ${{ github.repository }}
+      #target-branch: gh-pages
