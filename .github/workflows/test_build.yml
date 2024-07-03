@@ -5,14 +5,20 @@ jobs:
   dryrun:
     runs-on: ubuntu-latest
     steps:
-    - uses: knzconnor/zola-deploy-action@master
+    - uses: actions/checkout@master
+      with:
+        path: actions
+    - uses: ./actions
       with:
         strategy: dryrun
   check:
     name: Check
     runs-on: ubuntu-latest
     steps:
-    - uses: knzconnor/zola-deploy-action@master
+    - uses: actions/checkout@master
+      with:
+        path: actions
+    - uses: ./actions
       with:
         build-dir: test-site
         strategy: check
@@ -20,7 +26,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: knzconnor/zola-deploy-action@master
+    - uses: actions/checkout@master
+      with:
+        path: actions
+    - uses: ./actions
       with:
         build-dir: test-site
         build-flags: --drafts --base-url example.com
@@ -28,7 +37,10 @@ jobs:
   build_skip:
     runs-on: ubuntu-latest
     steps:
-    - uses: knzconnor/zola-deploy-action@master
+    - uses: actions/checkout@master
+      with:
+        path: actions
+    - uses: ./actions
       with:
         build-dir: test-site
         strategy: build
@@ -36,7 +48,10 @@ jobs:
   push:
     runs-on: ubuntu-latest
     steps:
-    - uses: knzconnor/zola-deploy-action@master
+    - uses: actions/checkout@master
+      with:
+        path: actions
+    - uses: ./actions
       with:
         build-dir: test-site
         strategy: push
