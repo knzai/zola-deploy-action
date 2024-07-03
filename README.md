@@ -9,14 +9,18 @@ branch as GitHub Pages.
 ## Table of Contents
 
  - [Usage](#usage)
- - [Environment Variables](#environment-variables)
+ - [Input Variables](#input-variables)
  - [Custom Domain](#custom-domain)
 
 ## Usage
 
 In your repository **Settings > Actions > General**, in Workflow permissions, make sure that `GITHUB_TOKEN` has **Read and Write permissions**.
 
-This example will build and deploy to gh-pages on push to the main branch.
+Depends on the default GitHub Action for GH Pages being set to deploy on on push to the target branch (gh-pages) 
+
+Check the .github/workflows/test_build.yml for the full set of tests as examples.
+
+This example will build and push to gh-pages on push to the main branch. The default GH Pages action will then deploy if set.
 
 ```
 name: Zola on GitHub Pages
@@ -25,21 +29,15 @@ on:
  push:
   branches:
    - main
-
-jobs:
+    
+jobs:        
   build:
-    name: Publish site
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout main
-      uses: actions/checkout@v4
-    - name: Build and deploy
-      uses: shalzz/zola-deploy-action@v0.19.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: shalzz/zola-deploy-action@master 
 ```
 
-This example will build and deploy to gh-pages branch on a push to the main branch, 
+This example will build and deploy to gh-pages branch on a push to the main branch (while passing some more inputs)
 and it will build only on pull requests.
 ```
 name: Zola on GitHub Pages
@@ -55,43 +53,35 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref != 'refs/heads/main'
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-      - name: Build only 
-        uses: shalzz/zola-deploy-action@v0.19.1
-        env:
-          BUILD_DIR: docs
-          BUILD_ONLY: true
-          BUILD_FLAGS: --drafts
-          # A GitHub token is not necessary when BUILD_ONLY is true
-          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -uses: shalzz/zola-deploy-action@v0.19.1
+       with:
+         build-dir: docs
+         stage: build
+         check-flags: --drafts
           
   build_and_deploy:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Checkout main
-        uses: actions/checkout@v4
-      - name: Build and deploy
-        uses: shalzz/zola-deploy-action@v0.19.1
-        env:
-          BUILD_DIR: docs
-          PAGES_BRANCH: gh-pages
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      -uses: shalzz/zola-deploy-action@v0.19.1
+       with:
+         stage: push
+         check-flags: --drafts
+         build-dir: docs
+         pages-branch: gh-pages
 ```
 
-## Environment Variables
-* `PAGES_BRANCH`: The git branch of your repo to which the built static files will be pushed. Default is `gh-pages` branch
-* `REPOSITORY`: The target repository to push to. Default is `GITHUB_REPOSITORY`(current repository). Set this variable if you want to deploy to other repo.
-* `BUILD_DIR`: The path from the root of the repo where we should run the `zola build` command. Default is `.` (current directory)
-* `OUT_DIR`: The build output directory of `zola build`. Default is `public`
-* `BUILD_FLAGS`: Custom build flags that you want to pass to zola while building. (Be careful supplying a different build output directory might break the action).
-* `BUILD_ONLY`: Set to value `true` if you don't want to deploy after `zola build`.
-* `BUILD_THEMES`: Set to false to disable fetching themes submodules. Default `true`.
-* `CHECK_LINKS`: Set to `true` to check links with `zola check`.
-* `CHECK_FLAGS`: Custom check flags that you want to pass to `zola check`.
-* `GITHUB_HOSTNAME`: The Github hostname to use in your action. This is to account for Enterprise instances where the base URL differs from the default, which is `github.com`.
-
+## Input Variables
+* `pages-branch`: default: `gh-pages` The git branch of your repo to which the built static files will be pushed.
+* `target-repository`: default: `GITHUB_REPOSITORY`(current repository) The target repository to push/deploy to.
+* `build-dir`: default: '.'. The path from the root of the repo where we should run the `zola build` command.
+* `build-flags`: default: ''. Custom build flags that you want to pass to zola while building. (Be careful supplying a different build output directory might break the action).
+* `stage`: [dryrun, check, build, push] default: push. How far to run the build 
+* `submodules`: default: true. Checkout submodules (for themes)
+* `skip-check`: default: false. Set to `true` to skipping checking external links with `zola check`. Build will still check internal
+* `check-flags`: default: ''. Custom check flags that you want to pass to `zola check`.
+* ~~`GITHUB_HOSTNAME`: The Github hostname to use in your action. This is to account for Enterprise instances where the base URL differs from the default, which is `github.com`.~~ We think this is now handled by doing everything through the official checkout action. Let us know if there's a problem with it.
+* `clear-history`: default: false. DANGER- force push an orphan to clean history of target/gh-pages. Right now it's always clearing, but we're working on a fix
 
 ## Custom Domain
 

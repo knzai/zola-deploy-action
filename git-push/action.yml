@@ -1,0 +1,66 @@
+#Still depends on triggering default gh deploy actions 
+name: 'Git Push'
+description: 'Push content to a repo '
+author: 'Shaleen Jain & Kenzi Connor'
+branding:
+  icon: 'zap'  
+  color: 'green'
+inputs:
+  repo:
+    description: Repository to push to
+    required: false
+    default: ${{github.repository}}
+    type: string
+  branch:
+    description: Branch to push to
+    required: false
+    default: gh-pages
+    type: string
+  path:
+    description: Path to content to push
+    required: false
+    default: "output"
+    type: string
+  clear-history:
+    description: DANGER- push -f an orphan to empty history of target
+    required: false
+    default: false
+    type: boolean
+runs:
+  using: 'composite'
+  steps:
+    - name: Output variables
+      shell: bash
+      run:  echo '${{ toJSON(inputs) }}'
+    - name: Checkout target repo
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repo }}
+        path: tmp
+    - name: Prep git
+      shell: bash
+      run: |
+        cd tmp
+        git config user.name "GitHub Actions"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+    - name: Make local branch (new empty or from remote)
+      shell: bash
+      run: |
+        cd tmp
+        
+        if ${{ inputs.clear-history }} || git fetch origin ${{ inputs.branch }}  2>&1 > /dev/null ; then
+            flag='--orphan'
+        else
+            flag=''
+        fi
+        git switch $flag ${{ inputs.branch }}
+    - name: Push
+      shell: bash
+      run: |
+        mv tmp/.git ${{ inputs.path }}/.git
+        cd ${{ inputs.path }}
+        touch .nojekyll
+        git add .
+        git commit --allow-empty -m "Deploy ${{ github.repository }} to ${{ inputs.repo }}:${{ inputs.branch }}"
+        git push -u ${{ inputs.clear-history && '-f' }} origin ${{ inputs.branch }}
+        echo "Push complete"

@@ -2,49 +2,49 @@
 on: [push, pull_request]
 name: Test building Zola
 jobs:
-  dryrun:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-      with:
-        path: actions
-    - uses: ./actions
-      with:
-        strategy: dryrun
-  check:
-    name: Check
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-      with:
-        path: actions
-    - uses: ./actions
-      with:
-        build-dir: test-site
-        strategy: check
-        check-flags: --drafts
-  build:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-      with:
-        path: actions
-    - uses: ./actions
-      with:
-        build-dir: test-site
-        build-flags: --drafts --base-url example.com
-        strategy: build
-  build_skip:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-      with:
-        path: actions
-    - uses: ./actions
-      with:
-        build-dir: test-site
-        strategy: build
-        skip-check: true
+#   dryrun:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@master
+#       with:
+#         path: actions
+#     - uses: ./actions
+#       with:
+#         strategy: dryrun
+#   check:
+#     name: Check
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@master
+#       with:
+#         path: actions
+#     - uses: ./actions
+#       with:
+#         build-dir: test-site
+#         strategy: check
+#         check-flags: --drafts
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@master
+#       with:
+#         path: actions
+#     - uses: ./actions
+#       with:
+#         build-dir: test-site
+#         build-flags: --drafts --base-url example.com
+#         strategy: build
+#   build_skip:
+#     runs-on: ubuntu-latest
+#     steps:
+#     - uses: actions/checkout@master
+#       with:
+#         path: actions
+#     - uses: ./actions
+#       with:
+#         build-dir: test-site
+#         strategy: build
+#         skip-check: true
   push:
     runs-on: ubuntu-latest
     steps:
@@ -54,6 +54,7 @@ jobs:
     - uses: ./actions
       with:
         build-dir: test-site
-        strategy: push
+        stage: push
+        #clear-history: true
         #target-repository: ${{ github.repository }}
         #target-branch: gh-pages

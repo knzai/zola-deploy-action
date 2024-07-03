@@ -1,13 +1,13 @@
 #Still depends on triggering default gh deploy actions 
-name: 'Zola Build & Push to Pages'
+name: 'Zola Deploy to Pages'
 description: 'Build and push a Zola site to GitHub Pages '
-author: 'Shaleen Jain'
+author: 'Shaleen Jain & Kenzi Connor'
 branding:
   icon: 'zap'  
   color: 'green'
 inputs:
-  strategy:
-    description: 'How far to take the deploy: dryrun, check, build, push'
+  stage:
+    description: 'How far to take the deploy.'
     required: false
     default: 'push'
     type: choice
@@ -46,54 +46,50 @@ inputs:
     required: false
     default: ''
     type: string
+  clear-history:
+    description: DANGER- push -f an orphan to empty history of target
+    required: false
+    default: false
+    type: boolean
+  submodules:
+    description: Checkout submodules (for themes)
+    required: false
+    default: true
+    type: boolean
 runs:
   using: 'composite'
   steps:
     - name: Output variables
       shell: bash
-      run: |
-        echo "GITHUB_REPOSITORY : $GITHUB_REPOSITORY"
-        echo "strategy          : ${{ inputs.strategy }}"
-        echo "target-repository : ${{ inputs.target-repository }}"
-        echo "target-branch     : ${{ inputs.target-branch }}"
-        echo "build-dir         : ${{ inputs.build-dir }}"
-        echo "build-flags       : ${{ inputs.build-flags }}"
-        echo "skip-check        : ${{ inputs.skip-check }}"
-        echo "check-flags       : ${{ inputs.check-flags }}"
+      run:  echo '${{ toJSON(inputs) }}'
+    - name: Install zola
+      uses: taiki-e/install-action@zola
     - name: Checkout source repo
-      if: inputs.strategy != 'dryrun'
+      if: inputs.stage != 'dryrun'
       uses: actions/checkout@v4
       with:
         path: content
-        submodules: recursive
-    - name: Install zola
-      if: inputs.strategy != 'dryrun'
-      uses: taiki-e/install-action@zola
-    - name: Run zola check
-      shell: bash
-      if: inputs.skip-check == false && inputs.strategy != 'dryrun'
-      run: zola --root content/${{ inputs.build-dir }} check ${{ inputs.flags }}
-    - name: Run zola build
-      if: (inputs.strategy == 'build' || inputs.strategy == 'push')
-      shell: bash
-      run: zola --root content/${{ inputs.build-dir }} build --output-dir output ${{ inputs.flags }}
-    - name: Checkout target repo
-      if: inputs.strategy == 'push'
-      uses: actions/checkout@v4
+        submodules: ${{inputs.submodules}}
+    - name: Zola check
+      if: inputs.stage != 'dryrun' && !inputs.skip-check
+      uses: ./actions/zola
       with:
-        path: tmp
-        repository: ${{ inputs.target-repository }}
-        ref: ${{ inputs.target-branch }}
-        sparse-checkout: ''
-    - name: Push files
-      if: inputs.strategy == 'push'
-      shell: bash
-      run: |
-        mv tmp/.git output/.git
-        cd output
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add .
-        git commit --allow-empty -m "Deploy ${{ github.repository }} to ${{ inputs.target-repository }}:${{ inputs.target-branch }}"
-        git push
-#git push --force "${remote_repo}" master:"${remote_branch}"
+        command: check
+        content: ${{inputs.build-dir}}
+        flags: ${{inputs.check-flags}}
+    - name: Zola build
+      if: inputs.stage == 'build' || inputs.stage == 'push'
+      uses: ./actions/zola
+      with:
+        command: build
+        content: ${{inputs.build-dir}}
+        flags: ${{inputs.build-flags}}
+        output: "output"
+    - name: Push content
+      if: inputs.stage == 'push'
+      uses: ./actions/git-push
+      with:
+        repo: ${{inputs.target-repository}}
+        branch: ${{inputs.target-branch}}
+        path: "output"
+        clear-history: ${{inputs.clear-history}}
