@@ -1,7 +1,8 @@
-# Zola Deploy Action
+# Deprecated and replaced: [https://github.com/knzai/zola-cli](https://github.com/knzai/zola-cli)
 
-[![Build Status](https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fshalzz%2Fzola-deploy-action%2Fbadge&style=flat)](https://actions-badge.atrox.dev/shalzz/zola-deploy-action/goto)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/shalzz/zola-deploy-action?sort=semver)
+
+
+# Zola Deploy Action
 
 A GitHub action to automatically build and deploy your [zola] site to the master
 branch as GitHub Pages.
