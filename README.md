@@ -1,5 +1,4 @@
-# Deprecated and replaced: [https://github.com/knzai/zola-cli](https://github.com/knzai/zola-cli)
-
+# (My fork only) Deprecated and replaced: https://github.com/zolacti/on
 
 
 # Zola Deploy Action
